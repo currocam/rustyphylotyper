@@ -11,9 +11,9 @@
 #' @useDynLib rustyphylotyper, .registration = TRUE
 NULL
 
-#' Return string `"Hello world!"` to R.
+#' Temporary function that returns the indexes (in base4) of the kemers.
 #' @export
-hello_world <- function() .Call(wrap__hello_world)
+kmers <- function(sequence, k) .Call(wrap__kmers, sequence, k)
 
 
 # nolint end

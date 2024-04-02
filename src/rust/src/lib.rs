@@ -1,10 +1,10 @@
 use extendr_api::prelude::*;
-
-/// Return string `"Hello world!"` to R.
+mod kmers;
+/// Temporary function that returns the indexes (in base4) of the kemers.
 /// @export
 #[extendr]
-fn hello_world() -> &'static str {
-    "Hello world!"
+fn kmers(sequence: &str, k: i32) -> Vec<usize> {
+    kmers::kmers(sequence.as_bytes(), k as usize)
 }
 
 // Macro to generate exports.
@@ -12,5 +12,5 @@ fn hello_world() -> &'static str {
 // See corresponding C code in `entrypoint.c`.
 extendr_module! {
     mod rustyphylotyper;
-    fn hello_world;
+    fn kmers;
 }

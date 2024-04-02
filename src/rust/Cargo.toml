@@ -9,4 +9,5 @@ crate-type = [ 'staticlib' ]
 name = 'rustyphylotyper'
 
 [dependencies]
+anyhow = "1.0.81"
 extendr-api = '*'
