@@ -13,29 +13,29 @@ fn word_base4(seq: &[u8]) -> Result<usize> {
     }
     Ok(acc)
 }
-pub(crate) fn kmers<'a>(sequence: &'a [u8], k: usize) -> impl Iterator<Item = usize> + 'a {
+pub(crate) fn kmers(sequence: &[u8], k: usize) -> impl Iterator<Item = usize> + '_ {
     sequence.windows(k).flat_map(word_base4)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn single_words_to_base4() {
-        assert_eq!(word_base4(b"AAAA").unwrap(), 0);
-        assert_eq!(word_base4(b"CAAA").unwrap(), 64);
-        assert_eq!(word_base4(b"ACGT").unwrap(), 27);
-        assert_eq!(word_base4(b"ACGT").unwrap(), 27);
+    macro_rules! assert_kmer {
+        ($seq:expr, $k:expr, $expected:expr) => {
+            let result = kmers($seq, $k).collect::<Vec<usize>>();
+            assert_eq!(result, $expected);
+        };
     }
     #[test]
     fn sequence_to_kmers_in_base4() {
-        let inner = |seq: &[u8], k: usize| -> Vec<usize> { kmers(seq, k).collect::<Vec<usize>>() };
-        assert_eq!(inner(b"ACGT", 1), vec![0, 1, 2, 3]);
-        assert_eq!(inner(b"CAAAA", 4), vec![64, 0]);
-        assert_eq!(inner(b"ACGT", 2), vec![1, 6, 11]);
-        assert_eq!(inner(b"NNNN", 2), vec![]);
-        assert_eq!(inner(b"CAAAAN", 4), vec![64, 0]);
-        assert_eq!(inner(b"CAAAANACGT", 4), vec![64, 0, 27]);
+        assert!(word_base4(b"ACCTggC").is_ok());
+        assert!(word_base4(b"NNA").is_err());
+        assert_kmer!(b"AAAA", 4, vec![0]);
+        assert_kmer!(b"ACGT", 1, vec![0, 1, 2, 3]);
+        assert_kmer!(b"CAAAA", 4, vec![64, 0]);
+        assert_kmer!(b"ACGT", 2, vec![1, 6, 11]);
+        assert_kmer!(b"NNNN", 2, vec![]);
+        assert_kmer!(b"CAAAAN", 4, vec![64, 0]);
+        assert_kmer!(b"CAAAANACGT", 4, vec![64, 0, 27]);
     }
 }
