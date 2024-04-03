@@ -4,7 +4,7 @@ mod kmers;
 /// @export
 #[extendr]
 fn kmers(sequence: &str, k: i32) -> Vec<usize> {
-    kmers::kmers(sequence.as_bytes(), k as usize)
+    kmers::kmers(sequence.as_bytes(), k as usize).collect()
 }
 
 // Macro to generate exports.
