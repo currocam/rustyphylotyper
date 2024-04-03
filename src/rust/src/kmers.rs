@@ -30,12 +30,14 @@ mod tests {
     fn sequence_to_kmers_in_base4() {
         assert!(word_base4(b"ACCTggC").is_ok());
         assert!(word_base4(b"NNA").is_err());
-        assert_kmer!(b"AAAA", 4, vec![0]);
-        assert_kmer!(b"ACGT", 1, vec![0, 1, 2, 3]);
-        assert_kmer!(b"CAAAA", 4, vec![64, 0]);
-        assert_kmer!(b"ACGT", 2, vec![1, 6, 11]);
-        assert_kmer!(b"NNNN", 2, vec![]);
-        assert_kmer!(b"CAAAAN", 4, vec![64, 0]);
-        assert_kmer!(b"CAAAANACGT", 4, vec![64, 0, 27]);
+        assert_kmer!(b"ACGT", 1, [0, 1, 2, 3]);
+        assert_kmer!(b"AAAA", 4, [0]);
+        assert_kmer!(b"CAAAA", 4, [64, 0]);
+        assert_kmer!(b"ACGT", 2, [1, 6, 11]);
+        assert_kmer!(b"NNNN", 2, []);
+        assert_kmer!(b"", 1, []);
+        assert_kmer!(b"ACGT", 100, []);
+        assert_kmer!(b"CAAAAN", 4, [64, 0]);
+        assert_kmer!(b"CAAAANACGT", 4, [64, 0, 27]);
     }
 }
