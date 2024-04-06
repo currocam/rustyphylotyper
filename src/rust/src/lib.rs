@@ -11,14 +11,15 @@ fn detect_kmers_across_sequences(sequences: &[Rstr], kmer_size: u32) -> Robj {
     kmer_counts.try_into().expect("Valid matrix")
 }
 
-/// Construct database
+/// Construct k-mer database
 /// @export
 #[extendr]
-fn database(sequences: &[Rstr], genera: &[Rstr], kmer_size: u32) -> Robj {
+fn kmer_database(sequences: &[Rstr], genera: &[Rstr], kmer_size: u32) -> List {
     let sequences = sequences.iter().map(|seq| seq.as_str());
     let genera = genera.iter().map(|f| f.as_str());
     let db = database::KmerDatabase::build(sequences, genera, kmer_size).expect("Valid database");
-    db.conditional_probs.try_into().expect("Valid matrix")
+    let probs: Robj = db.conditional_probs.try_into().expect("Valid matrix");
+    list!(conditional_prob = probs, genera = db.genera)
 }
 
 // Macro to generate exports.
@@ -26,6 +27,5 @@ fn database(sequences: &[Rstr], genera: &[Rstr], kmer_size: u32) -> Robj {
 // See corresponding C code in `entrypoint.c`.
 extendr_module! {
     mod rustyphylotyper;
-    fn detect_kmers_across_sequences;
-    fn database;
+    fn kmer_database;
 }

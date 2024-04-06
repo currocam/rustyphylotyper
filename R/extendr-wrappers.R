@@ -11,13 +11,9 @@
 #' @useDynLib rustyphylotyper, .registration = TRUE
 NULL
 
-#' Count k-mers across sequences.
+#' Construct k-mer database
 #' @export
-detect_kmers_across_sequences <- function(sequences, kmer_size) .Call(wrap__detect_kmers_across_sequences, sequences, kmer_size)
-
-#' Construct database
-#' @export
-database <- function(sequences, genera, kmer_size) .Call(wrap__database, sequences, genera, kmer_size)
+kmer_database <- function(sequences, genera, kmer_size) .Call(wrap__kmer_database, sequences, genera, kmer_size)
 
 
 # nolint end
