@@ -1,4 +1,6 @@
 use anyhow::{bail, Result};
+use extendr_api::prelude::*;
+
 fn word_base4(seq: &[u8]) -> Result<usize> {
     let mut acc = 0;
     for &base in seq {
@@ -13,10 +15,28 @@ fn word_base4(seq: &[u8]) -> Result<usize> {
     }
     Ok(acc)
 }
+
+pub(crate) fn detect_kmers_across_sequences<'a, T: ExactSizeIterator<Item = &'a [u8]>>(
+    sequences: T,
+    kmer_size: u32,
+) -> Array2<bool> {
+    let nrows = 4_usize.pow(kmer_size);
+    let ncols = sequences.len();
+    let mut kmer_counts = Array2::<bool>::from_elem((nrows, ncols), false);
+    kmer_counts
+        .axis_iter_mut(Axis(1))
+        .zip(sequences)
+        .for_each(|(mut col, seq)| {
+            for kmer in kmers(seq, kmer_size as usize) {
+                col[kmer] = true;
+            }
+        });
+    kmer_counts
+}
+
 pub(crate) fn kmers(sequence: &[u8], k: usize) -> impl Iterator<Item = usize> + '_ {
     sequence.windows(k).flat_map(word_base4)
 }
-
 
 #[cfg(test)]
 mod tests {
