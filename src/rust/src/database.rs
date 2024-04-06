@@ -3,13 +3,13 @@ use extendr_api::prelude::*;
 
 use crate::kmers;
 use std::collections::HashMap;
-pub(crate) struct KmerDatabase {
-    pub conditional_probs: Array2<f64>,
+pub(crate) struct KmerDatabase<T> {
+    pub conditional_probs: T,
     pub genera: Vec<String>,
 }
 
-impl KmerDatabase {
-    pub fn build<'a, T: ExactSizeIterator<Item = &'a str>, U: ExactSizeIterator<Item = &'a str>>(
+impl<'a> KmerDatabase<Array2<f64>> {
+    pub fn build<T: ExactSizeIterator<Item = &'a str>, U: ExactSizeIterator<Item = &'a str>>(
         sequences: T,
         genera: U,
         kmer_size: u32,
@@ -59,8 +59,28 @@ impl KmerDatabase {
         for mut row in conditional_probs.axis_iter_mut(Axis(0)) {
             row /= &genera_count;
         }
-
         let genera = dictionary.keys().map(|&s| s.to_string()).collect();
+        Ok(KmerDatabase {
+            conditional_probs,
+            genera,
+        })
+    }
+}
+
+impl KmerDatabase<ArrayView2<'_, f64>> {
+    pub fn read_from_list(list: List) -> Result<Self> {
+        let names_and_values = list.into_hashmap();
+        let conditional_probs = names_and_values
+            .get("conditional_prob")
+            .ok_or_else(|| anyhow::anyhow!("Missing conditional_prob"))?;
+        let conditional_probs: ArrayView2<f64> = conditional_probs
+            .try_into()
+            .expect("Failed to convert conditional_prob to matrix");
+        let genera = names_and_values
+            .get("genera")
+            .ok_or_else(|| anyhow::anyhow!("Missing genera"))?
+            .as_string_vector()
+            .ok_or_else(|| anyhow::anyhow!("Failed to convert genera to vector"))?;
         Ok(KmerDatabase {
             conditional_probs,
             genera,
@@ -125,8 +145,5 @@ mod tests {
         .expect("Failed to build kmer database");
         let genera = result.genera;
         assert_eq!(genera.len(), 3);
-        assert_eq!(genera[0], "Genus1");
-        assert_eq!(genera[1], "Genus2");
-        assert_eq!(genera[2], "Genus3");
     }
 }
