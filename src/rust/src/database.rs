@@ -20,21 +20,25 @@ impl<'a> KmerDatabase<Array2<f64>> {
         let genera = genera.collect::<Vec<&str>>();
         // We don't know how many unique, but less than the number of genera
         let mut genera_count: Vec<usize> = Vec::with_capacity(genera.len());
+        let mut unique_genera: Vec<String> = Vec::with_capacity(genera.len());
         let mut dictionary: HashMap<&'a str, usize> = HashMap::new();
         let mut index = 0;
         for genus in genera.iter() {
             let x = dictionary.entry(genus).or_insert_with(|| {
                 let current_index = index;
                 genera_count.push(1); // pseudocount
+                unique_genera.push(genus.to_string());
                 index += 1;
                 current_index
             });
             genera_count[*x] += 1;
         }
+        unique_genera.shrink_to_fit();
+        let n_unique_genera = index;
         let genera_count: Array1<f64> = genera_count.iter().map(|&count| count as f64).collect();
 
         // Allocate a matrix to store the counts of each kmer for each genus
-        let mut genus_count = Array2::<f64>::zeros((4_usize.pow(kmer_size), index));
+        let mut genus_count = Array2::<f64>::zeros((4_usize.pow(kmer_size), n_unique_genera));
         // Allocate prior vector
         let mut kmers_count = Array1::<f64>::zeros(4_usize.pow(kmer_size));
         let n_sequences = sequences.len();
@@ -59,10 +63,9 @@ impl<'a> KmerDatabase<Array2<f64>> {
         for mut row in conditional_probs.axis_iter_mut(Axis(0)) {
             row /= &genera_count;
         }
-        let genera = dictionary.keys().map(|&s| s.to_string()).collect();
         Ok(KmerDatabase {
             conditional_probs,
-            genera,
+            genera: unique_genera,
         })
     }
 }
@@ -145,5 +148,9 @@ mod tests {
         .expect("Failed to build kmer database");
         let genera = result.genera;
         assert_eq!(genera.len(), 3);
+        dbg!(&genera);
+        assert_eq!(genera[0], "Genus1");
+        assert_eq!(genera[1], "Genus2");
+        assert_eq!(genera[2], "Genus3");
     }
 }
