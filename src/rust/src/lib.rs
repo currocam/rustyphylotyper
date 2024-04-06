@@ -1,10 +1,22 @@
 use extendr_api::prelude::*;
-mod kmers;
-/// Temporary function that returns the indexes (in base4) of the kemers.
+
+pub(crate) mod kmers;
+/// Count k-mers across sequences.
 /// @export
 #[extendr]
-fn kmers(sequence: &str, k: i32) -> Vec<usize> {
-    kmers::kmers(sequence.as_bytes(), k as usize).collect()
+fn detect_kmers_across_sequences(sequences: &[Rstr], kmer_size: u32) -> Robj {
+    let nrows = 4_usize.pow(kmer_size);
+    let ncols = sequences.len();
+    let mut kmer_counts = Array2::<bool>::from_elem((nrows, ncols), false);
+    kmer_counts
+        .axis_iter_mut(Axis(1))
+        .zip(sequences.iter())
+        .for_each(|(mut col, seq)| {
+            for kmer in kmers::kmers(seq.as_bytes(), kmer_size as usize) {
+                col[kmer] = true;
+            }
+        });
+    kmer_counts.try_into().expect("Valid matrix")
 }
 
 // Macro to generate exports.
@@ -12,5 +24,5 @@ fn kmers(sequence: &str, k: i32) -> Vec<usize> {
 // See corresponding C code in `entrypoint.c`.
 extendr_module! {
     mod rustyphylotyper;
-    fn kmers;
+    fn detect_kmers_across_sequences;
 }

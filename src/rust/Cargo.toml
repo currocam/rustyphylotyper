@@ -10,4 +10,6 @@ name = 'rustyphylotyper'
 
 [dependencies]
 anyhow = "1.0.81"
-extendr-api = '*'
+bitvector = "0.1.5"
+extendr-api = { version = "0.6.0", features = ["ndarray"] }
+ndarray = "0.15.6"

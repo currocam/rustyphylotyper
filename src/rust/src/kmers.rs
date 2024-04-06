@@ -17,6 +17,7 @@ pub(crate) fn kmers(sequence: &[u8], k: usize) -> impl Iterator<Item = usize> + 
     sequence.windows(k).flat_map(word_base4)
 }
 
+
 #[cfg(test)]
 mod tests {
     use super::*;

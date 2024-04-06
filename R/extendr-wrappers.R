@@ -11,9 +11,9 @@
 #' @useDynLib rustyphylotyper, .registration = TRUE
 NULL
 
-#' Temporary function that returns the indexes (in base4) of the kemers.
+#' Count k-mers across sequences.
 #' @export
-kmers <- function(sequence, k) .Call(wrap__kmers, sequence, k)
+detect_kmers_across_sequences <- function(sequences, kmer_size) .Call(wrap__detect_kmers_across_sequences, sequences, kmer_size)
 
 
 # nolint end
