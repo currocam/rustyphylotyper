@@ -16,19 +16,19 @@ fn word_base4(seq: &[u8]) -> Result<usize> {
     Ok(acc)
 }
 
-pub(crate) fn detect_kmers_across_sequences<'a, T: ExactSizeIterator<Item = &'a [u8]>>(
+pub(crate) fn detect_kmers_across_sequences<'a, T: ExactSizeIterator<Item = &'a str>>(
     sequences: T,
     kmer_size: u32,
-) -> Array2<bool> {
+) -> Array2<u8> {
     let nrows = 4_usize.pow(kmer_size);
     let ncols = sequences.len();
-    let mut kmer_counts = Array2::<bool>::from_elem((nrows, ncols), false);
+    let mut kmer_counts = Array2::<u8>::from_elem((nrows, ncols), 0);
     kmer_counts
         .axis_iter_mut(Axis(1))
         .zip(sequences)
         .for_each(|(mut col, seq)| {
-            for kmer in kmers(seq, kmer_size as usize) {
-                col[kmer] = true;
+            for kmer in kmers(seq.as_bytes(), kmer_size as usize) {
+                col[kmer] = 1;
             }
         });
     kmer_counts
@@ -60,5 +60,32 @@ mod tests {
         assert_kmer!(b"ACGT", 100, []);
         assert_kmer!(b"CAAAAN", 4, [64, 0]);
         assert_kmer!(b"CAAAANACGT", 4, [64, 0, 27]);
+    }
+    #[test]
+    fn kmer_matrix() {
+        let sequences = vec!["ACGT", "ACGT", "ACGT"];
+        let input = sequences.iter().map(|&s| s);
+        let kmer_counts = detect_kmers_across_sequences(input, 1);
+        assert_eq!(kmer_counts.shape(), [4, 3]);
+        assert_eq!(kmer_counts.column(0).iter().sum::<u8>(), 4);
+        assert_eq!(kmer_counts.column(1).iter().sum::<u8>(), 4);
+        assert_eq!(kmer_counts.column(2).iter().sum::<u8>(), 4);
+
+        let sequences = vec!["ACGT", "ACGT", "ACG"];
+        let input = sequences.iter().map(|&s| s);
+        let kmer_counts = detect_kmers_across_sequences(input, 4);
+        assert_eq!(kmer_counts.column(0).iter().sum::<u8>(), 1);
+        assert_eq!(kmer_counts.column(1).iter().sum::<u8>(), 1);
+        assert_eq!(kmer_counts.column(2).iter().sum::<u8>(), 0);
+        let col_one = kmer_counts.column(0);
+        assert_eq!(
+            *col_one.iter().nth(word_base4(b"ACGT").unwrap()).unwrap(),
+            1
+        );
+        let col_two = kmer_counts.column(1);
+        assert_eq!(
+            *col_two.iter().nth(word_base4(b"ACGT").unwrap()).unwrap(),
+            1
+        );
     }
 }

@@ -15,5 +15,9 @@ NULL
 #' @export
 detect_kmers_across_sequences <- function(sequences, kmer_size) .Call(wrap__detect_kmers_across_sequences, sequences, kmer_size)
 
+#' Construct database
+#' @export
+database <- function(sequences, genera, kmer_size) .Call(wrap__database, sequences, genera, kmer_size)
+
 
 # nolint end
